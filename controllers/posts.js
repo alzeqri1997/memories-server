@@ -44,6 +44,21 @@ export const getPostsBySearch = async (req, res) => {
   }
 };
 
+export const getPostsByCreator = async (req, res) => {
+  const { name } = req.query;
+
+  try {
+    const posts = await PostMessage.find({ name });
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+
+  try {
+  } catch (error) {
+    res.status(404).json({ message: error });
+  }
+};
+
 export const createPost = async (req, res) => {
   const post = req.body;
 
