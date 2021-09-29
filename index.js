@@ -8,6 +8,7 @@ import cors from 'cors';
 config();
 
 import postRoutes from './routes/posts.js';
+import userRoutes from './routes/user.js';
 
 // app config
 const app = express();
@@ -18,6 +19,7 @@ app.use(cors());
 
 // Routes
 app.use('/posts', postRoutes);
+app.use('/user', userRoutes);
 
 app.get('/', (req, res) => {
   res.send('this is the main Rout');
@@ -36,7 +38,3 @@ mongoose
         error occurred
       ${error}`);
   });
-
-// app.listen(PORT, () => {
-//   console.log(`server is on ${PORT}`);
-// });
