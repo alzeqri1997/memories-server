@@ -1,13 +1,12 @@
-import express from 'express';
-import mongoose from 'mongoose';
+import express from "express";
+import mongoose from "mongoose";
 
-import { PostMessage } from '../models/index.js';
+import { PostMessage } from "../models/index.js";
 
 const router = express.Router();
 
 export const getPosts = async (req, res) => {
   const { page } = req.query;
-  console.log(page);
 
   try {
     const LIMIT = 8;
@@ -15,21 +14,18 @@ export const getPosts = async (req, res) => {
 
     const total = await PostMessage.countDocuments({});
 
-    const posts = await PostMessage.find()
-      .sort({ _id: -1 })
-      .limit(LIMIT)
-      .skip(startIndex);
-
-    // const posts = await PostMessage.find();
+    const posts = await PostMessage.find().sort({ _id: -1 }).limit(LIMIT).skip(startIndex);
 
     console.log(posts);
+
+    // const posts = await PostMessage.find();
     res.status(200).json({
       data: posts,
-      currentPage: Number(page),
+      currentPage: Number(page) || 0,
       numberOfPages: Math.ceil(total / LIMIT),
     });
   } catch (error) {
-    res.status(404).json({ message: 'error occurred', error });
+    res.status(404).json({ message: "error occurred", error });
   }
 };
 
@@ -37,10 +33,10 @@ export const getPostsBySearch = async (req, res) => {
   const { searchQuery, tags } = req.query;
 
   try {
-    const title = new RegExp(searchQuery, 'i');
+    const title = new RegExp(searchQuery, "i");
 
     const posts = await PostMessage.find({
-      $or: [{ title }, { tags: { $in: tags.split(',') } }],
+      $or: [{ title }, { tags: { $in: tags.split(",") } }],
     });
 
     res.status(200).json({ data: posts });
@@ -54,8 +50,10 @@ export const getPostsByCreator = async (req, res) => {
 
   try {
     const posts = await PostMessage.find({ name });
+
+    res.status(200).json({ data: posts });
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    return res.status(404).json({ message: error.message });
   }
 
   try {
@@ -69,6 +67,9 @@ export const getPost = async (req, res) => {
 
   try {
     const post = await PostMessage.findById(id);
+    res.status(200).json({
+      data: post,
+    });
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
@@ -80,7 +81,7 @@ export const createPost = async (req, res) => {
   const newPostMessage = new PostMessage({
     ...post,
     creator: req.userId,
-    createAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
   });
 
   try {
@@ -98,8 +99,7 @@ export const updatePost = async (req, res) => {
 
   console.log(id);
 
-  if (!mongoose.Types.ObjectId.isValid(id))
-    return res.status(404).send(`No post with id: ${id}`);
+  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No post with id: ${id}`);
 
   const updatedPost = { creator, title, message, tags, selectedFile, _id: id };
 
@@ -111,32 +111,30 @@ export const updatePost = async (req, res) => {
 export const deletePost = async (req, res) => {
   const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id))
-    return res.status(404).send(`No post with id: ${id}`);
+  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No post with id: ${id}`);
 
   await PostMessage.findByIdAndRemove(id);
 
-  res.json({ message: 'Post deleted successfully' });
+  res.json({ message: "Post deleted successfully" });
 };
 
 export const likePost = async (req, res) => {
   const { id } = req.params;
 
   if (!req.userId) {
-    return res.json({ message: 'Unauthenticated' });
+    return res.json({ message: "Unauthenticated" });
   }
 
-  if (!mongoose.Types.ObjectId.isValid(id))
-    return res.status(404).send(`No post with id : ${id}`);
+  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No post with id : ${id}`);
 
   const post = await PostMessage.findById(id);
 
-  const index = post.likes.findIndex((id) => id === String(req.userId));
+  const index = post.likes.findIndex(id => id === String(req.userId));
 
   if (index === -1) {
     post.likes.push(req.userId);
   } else {
-    post.likes = post.likes.filter((id) => id !== String(req.userId));
+    post.likes = post.likes.filter(id => id !== String(req.userId));
   }
 
   const updatedPost = await PostMessage.findByIdAndUpdate(id, post, {

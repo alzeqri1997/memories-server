@@ -22,14 +22,51 @@ app.use('/posts', postRoutes);
 app.use('/user', userRoutes);
 
 app.get('/', (req, res) => {
-  res.send('this is the main Rout');
+  res.redirect('/posts');
 });
+
+app.use(function (req, res, next) {
+  let err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+function errorHandler(error, request, response, next) {
+  return response.status(error.status || 500).json({
+    error: {
+      message:
+        error.message ||
+        'Something went wrong . Reload the page ,or try again later ',
+    },
+  });
+}
+
+app.use(errorHandler);
 
 const CONNECTION_URL = process.env.MONGO_DB;
 const PORT = process.env.PORT || 5000;
 
+// mongoose
+//   .connect(CONNECTION_URL, { useUnifiedTopology: true })
+//   .then(() =>
+//     app.listen(PORT, () => console.log(`Server Running on Port ${PORT}`))
+//   )
+//   .catch((error) => {
+//     console.log(`
+//         error occurred
+//       ${error}`);
+//   });
+
+// Connecting to local mongoDB
+
+mongoose.set('debug', true);
+mongoose.Promise = Promise;
 mongoose
-  .connect(CONNECTION_URL, { useUnifiedTopology: true })
+  .connect('mongodb://localhost/memo', {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+    keepAlive: true,
+  })
   .then(() =>
     app.listen(PORT, () => console.log(`Server Running on Port ${PORT}`))
   )
