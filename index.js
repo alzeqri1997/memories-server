@@ -45,7 +45,7 @@ const CONNECTION_URL = process.env.MONGO_DB;
 const PORT = process.env.PORT || 5000;
 
 // mongoose.set('debug', true);
-mongoose.Promise = Promise;
+// mongoose.Promise = Promise;
 
 mongoose
   .connect(CONNECTION_URL, { useUnifiedTopology: true })
